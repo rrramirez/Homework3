@@ -1,24 +1,71 @@
 import java.util.Arrays;
 import java.util.Scanner;
 
+import org.apache.commons.cli.*;
+
 import static java.lang.System.*;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        int size = args.length;
-        if(size == 0){
-            out.println("-1");
-            System.exit(0);
+        Options options = new Options();
+
+        Option option1 = Option.builder().hasArg().longOpt("type").build();
+        Option option2 = Option.builder().hasArg().longOpt("key").build();
+        Option option3 = Option.builder().hasArgs().longOpt("list").build();
+        options.addOption(option1);
+        options.addOption(option2);
+        options.addOption(option3);
+
+        String type="";
+        String tempKey="";
+        String[] tempList=null;
+        int size = 0;
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cmd = parser.parse(options, args);
+            type = cmd.getOptionValue("type");
+            tempKey = cmd.getOptionValue("key");
+            tempList = cmd.getOptionValues("list");
+            out.println(type);
+            out.println(tempKey);
+            for(String x : tempList) {
+                out.print(x + " ");
+                size++;
+            }
+            out.println("");
+
+            if(type == null)
+                throw new ParseException("Argument --type not given");
+            if(tempKey == null)
+                throw new ParseException("Argument --key not given");
+            if(tempList == null)
+                throw new ParseException("Argument --list not given");
+        }
+        catch(ParseException e)
+        {
+            out.println("There was an error reading arguments");
+            e.printStackTrace();
+            exit(0);
         }
 
-        double[] list = new double[size];
+
+        if(!((type.compareTo("i") != 0 && type.compareTo("s") == 0) || (type.compareTo("i") == 0 && type.compareTo("s") != 0)))
+        {
+            out.println("Unrecognized 'type' argument given. Try 'i' for integer type or 's' for String type.");
+            exit(0);
+        }
+
+        Comparable[] list = new Comparable[size];
+
+
         int[] indexList = new int[size];
         try
         {
             for(int x=0; x<size; x++) {
-                list[x] = Double.parseDouble(args[x]);
+                list[x] = tempList[x];
                 indexList[x] = x;
             }
         }
@@ -28,16 +75,7 @@ public class Main
             System.exit(0);
         }
 
-        Scanner scan = new Scanner(in);
-        double key = 0;
-        try {
-            key = scan.nextDouble();
-        }
-        catch(Exception e)
-        {
-            out.println("-1");
-            System.exit(0);
-        }
+        Comparable key = tempKey;
 
         mergeSort(list, indexList,0, size-1);
 
@@ -56,7 +94,7 @@ public class Main
         out.println(result);
     }
 
-    private static int binSearch(double[] aList, int[] indexList, double key)
+    private static int binSearch(Comparable[] aList, int[] indexList, Comparable key)
     {
         int max = aList.length - 1;
         int min = 0;
@@ -65,15 +103,15 @@ public class Main
         while(min <= max)
         {
             mid = (min + max) /2;
-            if(Double.compare(aList[mid], key) == 0)
+            if(/*Double.compare(aList[mid], key)*/aList[mid].compareTo(key) == 0)
             {
                 return mid;
             }
-            else if(/*aList[mid] > key */ Double.compare(aList[mid], key) > 0)
+            else if(/*aList[mid] > key*/ aList[mid].compareTo(key) > 0)
             {
                 max = mid - 1;
             }
-            else if(/*aList[mid] < key*/ Double.compare(aList[mid], key) < 0)
+            else if(/*aList[mid] < key*/ aList[mid].compareTo(key) < 0)
             {
                 min = mid + 1;
             }
@@ -81,7 +119,7 @@ public class Main
         return -1;
     }
 
-    private static void mergeSort(double[] list, int[] indexList, int l, int h)
+    private static void mergeSort(Comparable[] list, int[] indexList, int l, int h)
     {
         if(l < h) {
             int mid = ((h - l) / 2) + l;
@@ -93,13 +131,13 @@ public class Main
         }
     }
 
-    private static void merge(double[] list, int[] indexList, int l, int mid, int h)
+    private static void merge(Comparable[] list, int[] indexList, int l, int mid, int h)
     {
         int n1 = mid - l +1;
         int n2 = h - mid;
 
-        double[] listA = new double[n1];
-        double[] listB = new double[n2];
+        Comparable[] listA = new Comparable[n1];
+        Comparable[] listB = new Comparable[n2];
 
         int[] indexA = new int[n1];
         int[] indexB = new int[n2];
@@ -119,7 +157,7 @@ public class Main
 
         while(i<n1 && j<n2)
         {
-            if(/*listA[i] <= listB[j]*/ Double.compare(listA[i], listB[j]) <= 0)
+            if(/*listA[i] <= listB[j]*/ listA[i].compareTo(listB[j]) <= 0)
             {
                 list[k] = listA[i];
                 indexList[k] = indexA[i];
@@ -148,7 +186,7 @@ public class Main
         }
     }
 
-    private static int findDuplicates(double[] list, int[] indexList, int ogIndex)
+    private static int findDuplicates(Comparable[] list, int[] indexList, int ogIndex)
     {
         boolean rightDuplicate = true;
         boolean leftDuplicate = true;
@@ -162,7 +200,7 @@ public class Main
             if(pointerIndex >= list.length)
                 break;
 
-            if(Double.compare(list[pointerIndex], list[finalIndex]) == 0)
+            if(/*Double.compare(list[pointerIndex], list[finalIndex])*/ list[pointerIndex].compareTo(list[finalIndex]) == 0)
             {
                 if(indexList[pointerIndex] < indexList[finalIndex])
                 {
@@ -184,7 +222,7 @@ public class Main
             if(pointerIndex <= -1)
                 break;
 
-            if(Double.compare(list[pointerIndex], list[finalIndex]) == 0)
+            if(/*Double.compare(list[pointerIndex], list[finalIndex])*/ list[pointerIndex].compareTo(list[finalIndex]) == 0)
             {
                 if(indexList[pointerIndex] < indexList[finalIndex])
                 {
