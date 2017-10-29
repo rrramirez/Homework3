@@ -29,13 +29,6 @@ public class Main
             type = cmd.getOptionValue("type");
             tempKey = cmd.getOptionValue("key");
             tempList = cmd.getOptionValues("list");
-            out.println(type);
-            out.println(tempKey);
-            for(String x : tempList) {
-                out.print(x + " ");
-                size++;
-            }
-            out.println("");
 
             if(type == null)
                 throw new ParseException("Argument --type not given");
@@ -43,6 +36,9 @@ public class Main
                 throw new ParseException("Argument --key not given");
             if(tempList == null)
                 throw new ParseException("Argument --list not given");
+
+            for(String x : tempList)
+                size++;
         }
         catch(ParseException e)
         {
